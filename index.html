@@ -135,6 +135,11 @@
   input::placeholder{color:#98a0bd}
   form .btn{width:100%;margin-top:6px}
   .privacy{font-size:.8rem;color:#9fabd3;text-align:center;margin-top:14px}
+  .consent{display:flex;gap:12px;align-items:flex-start;margin:4px 0 16px;font-size:.88rem;color:#dbe2fa;line-height:1.45;cursor:pointer;font-weight:400}
+  .consent input{width:22px;height:22px;flex:none;margin-top:1px;padding:0;accent-color:var(--accent);cursor:pointer}
+  .consent a,.privacy a,footer a{color:#fff;text-decoration:underline}
+  .consent.err{color:#ff9d9d}
+  .consent.err input{outline:2px solid #ff4d4d;outline-offset:2px}
   .success{display:none;text-align:center;padding:14px 4px}
   .success .tick{width:60px;height:60px;border-radius:50%;background:var(--teal);margin:0 auto 14px;display:grid;place-items:center;font-size:1.8rem;color:#06382d;font-weight:800}
   .success h3{font-size:1.4rem;margin-bottom:6px}
@@ -290,6 +295,10 @@
             <input type="text" id="citta" name="citta" placeholder="Es. Palermo, Catania, Messina…" autocomplete="address-level2" required>
           </div>
           <input type="text" name="sito" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+          <label class="consent" id="consent-label" for="privacy">
+            <input type="checkbox" id="privacy" name="privacy" required>
+            <span>Ho letto l'<a href="privacy.html" target="_blank" rel="noopener">informativa privacy</a> e acconsento al trattamento di email e città per essere avvisato del lancio di Swaptiva.</span>
+          </label>
           <button type="submit" class="btn">Voglio provarla per primo</button>
           <p class="privacy">Nessuno spam: ti scriviamo solo per il lancio.</p>
         </div>
@@ -304,7 +313,7 @@
 </main>
 
 <footer>
-  <div class="wrap"><b>Swaptiva</b> · L'app in sviluppo per le permute di auto e moto tra privati · Sicilia</div>
+  <div class="wrap"><b>Swaptiva</b> · L'app in sviluppo per le permute di auto e moto tra privati · Sicilia · <a href="privacy.html">Privacy</a></div>
 </footer>
 
 <script>
@@ -319,7 +328,10 @@
     const okEmail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
     form.email.style.borderColor = okEmail ? '' : '#ff4d4d';
     form.citta.style.borderColor = citta ? '' : '#ff4d4d';
+    const okConsent = form.privacy.checked;
+    document.getElementById('consent-label').classList.toggle('err', !okConsent);
     if (!okEmail || !citta) { (okEmail ? form.citta : form.email).focus(); return; }
+    if (!okConsent) { form.privacy.focus(); return; }
 
     // Campo trappola anti-bot: se compilato, fingiamo successo senza inviare.
     if (form.sito.value) { form.classList.add('done'); return; }
@@ -337,7 +349,7 @@
     fetch(SCRIPT_URL, {
       method: 'POST',
       mode: 'no-cors',
-      body: new URLSearchParams({ email: email, citta: citta })
+      body: new URLSearchParams({ email: email, citta: citta, consenso: 'si' })
     }).then(function () {
       form.classList.add('done');
     }).catch(function () {
